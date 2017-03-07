@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+    <head>
+    	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    </head>
+    <body>
+    	<div id="map" style="width:100%; height:300px;"></div>
+        <h1>Deaths during the L.A. riots</h1>
+        <table border=1 cellpadding=7>
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Age</th>
+                <th>Address</th>
+                <th>Type</th>
+                <th>Gender</th>
+                <th>Race</th>
+            </tr>
+			<!--can do computer program logic; loops etc
+			we are doing a for list comprehension where we every dictionary in our list is name obj and we will access and use it to fit inside a snippet of html and that we be repeated again and again.-->
+            {% for obj in object_list %}
+            <tr>
+                <td><a href="/{{ obj.id }}/">{{ 
+                obj.full_name }}</a></td>
+                <td>{{ obj.date }}</td>
+                <td>{{ obj.age}}</td>
+                <td>{{ obj.address}}</td>
+                <td>{{ obj.type }}</td>
+                <!-- jinj.pocoo.org/doc/2.9/templates/#builtin-filters-->
+                <td>{{ obj.gender|upper }}</td>
+                <td>{{ obj.race }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <script type="text/javascript">
+            var map = L.map('map').setView([34.055, -118.35], 9);
+            var osmLayer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: 'Data, imagery and map information provided by <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a>.'
+            });
+            map.addLayer(osmLayer);
+            var data = {
+              "type": "FeatureCollection",
+              "features": [
+                {% for obj in object_list %}
+                {
+                  "type": "Feature",
+                  "properties": {
+                    "full_name": "{{ obj.full_name }}",
+                    "age": " {{ obj.age }}",
+                    "id": "{{ obj.id }}"
+                  },
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [{{ obj.x }}, {{ obj.y }}]
+                  }
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+              ]
+            };
+            var dataLayer = L.geoJson(data, {
+                onEachFeature: function(feature, layer) {
+                    layer.bindPopup(
+                    	"<a href='" + feature.properties.id + "/'>" + 
+                    	feature.properties.full_name + 
+                    	", " + feature.properties.age + " years old"
+                    	);
+                }
+            });
+			map.addLayer(dataLayer);
+
+        </script>
+    </body>
+
+    </body>
+</html>
